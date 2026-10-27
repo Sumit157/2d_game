@@ -1,5 +1,11 @@
-import { DEFAULT_CHARACTER_ID, DEFAULT_STAGE_ID } from '@desi-fighter/shared';
+import {
+  DEFAULT_CHARACTER_ID,
+  DEFAULT_STAGE_ID,
+  type CombatEvent,
+  type MatchState,
+} from '@desi-fighter/shared';
 
+import type { ArenaVisuals } from '../game/worldScene';
 import type { SettingsStore } from '../settings/settings';
 import { clear, focusFirst, el } from './dom';
 import { createNavigation, type Navigation, type ScreenId } from './navigation';
@@ -10,6 +16,7 @@ import { mainMenuScreen } from './screens/mainMenu';
 import { modeSelectScreen } from './screens/modeSelect';
 import { settingsScreen } from './screens/settingsScreen';
 import { stageSelectScreen } from './screens/stageSelect';
+import { createRafScheduler, type Scheduler } from './scheduler';
 
 /**
  * Menu shell.
@@ -19,8 +26,21 @@ import { stageSelectScreen } from './screens/stageSelect';
  * shell with a fake arena host and no WebGL.
  */
 
+/** Everything the renderer needs to draw a match it does not own. */
+export interface ArenaMountOptions {
+  stageId: string;
+  /** Character id per fighter slot (player one, player two). */
+  fighters: readonly [string, string];
+  /** Authoritative simulation state, read every rendered frame. */
+  getState(): MatchState;
+  /** Presentation events produced by simulation ticks. */
+  drainEvents(): CombatEvent[];
+  /** Live visual preferences (shake, reduced motion). */
+  getVisuals(): ArenaVisuals;
+}
+
 export interface ArenaHost {
-  mount(container: HTMLElement, stageId: string, characterId: string): void;
+  mount(container: HTMLElement, options: ArenaMountOptions): void;
   unmount(): void;
 }
 
@@ -38,6 +58,8 @@ export interface ScreenContext {
   selection: SelectionState;
   settings: SettingsStore;
   arena: ArenaHost;
+  /** Frame loop used by the arena; injectable so tests control time. */
+  scheduler: Scheduler;
   announce(message: string): void;
 }
 
@@ -53,6 +75,8 @@ export interface MountAppOptions {
   arena: ArenaHost;
   settingsStore: SettingsStore;
   initialScreen?: ScreenId;
+  /** Frame loop for the arena; defaults to requestAnimationFrame. */
+  scheduler?: Scheduler;
   /** Test hook: override individual screens. */
   screens?: Partial<Record<ScreenId, ScreenFactory>>;
 }
@@ -74,6 +98,7 @@ const SCREENS: Record<ScreenId, ScreenFactory> = {
 
 export function mountApp(options: MountAppOptions): AppHandle {
   const { root, arena, settingsStore } = options;
+  const scheduler = options.scheduler ?? createRafScheduler();
   const factories: Record<ScreenId, ScreenFactory> = { ...SCREENS, ...options.screens };
 
   const selection: SelectionState = {
@@ -98,6 +123,7 @@ export function mountApp(options: MountAppOptions): AppHandle {
     selection,
     settings: settingsStore,
     arena,
+    scheduler,
     announce: (message) => {
       status.textContent = message;
     },

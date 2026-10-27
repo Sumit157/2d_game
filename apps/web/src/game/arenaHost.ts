@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
 
 import { GAME_HEIGHT, GAME_WIDTH } from '../config';
-import type { ArenaHost } from '../ui/app';
-import { PlaceholderArenaScene } from './placeholderArenaScene';
+import type { ArenaHost, ArenaMountOptions } from '../ui/app';
+import { WorldScene } from './worldScene';
 
 /**
- * Owns the Phaser game instance for the placeholder arena.
+ * Owns the Phaser game instance for the arena.
  *
  * The game is created on entry and destroyed on exit so the menu stays a
- * lightweight DOM app. Phase 2 replaces the scene with the combat simulator;
- * rendering never becomes the source of truth for combat results.
+ * lightweight DOM app. The scene receives read-only access to the simulation
+ * state owned by the screen — rendering is never the source of truth.
  */
 export function createArenaHost(): ArenaHost {
   let game: Phaser.Game | null = null;
@@ -21,7 +21,7 @@ export function createArenaHost(): ArenaHost {
   };
 
   return {
-    mount(container, stageId, characterId) {
+    mount(container, options: ArenaMountOptions) {
       unmount();
       game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -36,7 +36,12 @@ export function createArenaHost(): ArenaHost {
         },
         scene: [],
       });
-      game.scene.add('arena', new PlaceholderArenaScene(), true, { stageId, characterId });
+      game.scene.add('world', new WorldScene(), true, {
+        stageId: options.stageId,
+        getState: options.getState,
+        drainEvents: options.drainEvents,
+        getVisuals: options.getVisuals,
+      });
     },
     unmount,
   };

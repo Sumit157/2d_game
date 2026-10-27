@@ -696,7 +696,8 @@ body {
   max-width: 1180px;
 }
 
-.arena-stage {
+.arena-frame {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
@@ -705,10 +706,193 @@ body {
   overflow: hidden;
 }
 
-.arena-stage canvas {
+.arena-world {
+  position: absolute;
+  inset: 0;
+}
+
+.arena-world canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+/* HUD overlays the canvas: text and numbers stay selectable and readable by
+   assistive tech, unlike anything drawn inside the game. */
+.arena-hud {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: clamp(8px, 2vw, 28px);
+  align-items: start;
+  padding: clamp(10px, 2vw, 20px);
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(11, 9, 18, 0.88), rgba(11, 9, 18, 0));
+}
+
+.hud-player {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.hud-player--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.hud-player__name {
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.hud-bar {
+  width: 100%;
+  height: clamp(12px, 2vw, 18px);
+  background: rgba(11, 9, 18, 0.8);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hud-bar__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--teal), #6fe3d4);
+  transition: width 0.18s linear;
+}
+
+.hud-bar__fill--low {
+  background: linear-gradient(90deg, var(--danger), #ffb9a8);
+}
+
+.hud-player__meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+}
+
+.hud-player--right .hud-player__meta {
+  flex-direction: row-reverse;
+}
+
+.hud-player__hp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.hud-player__rounds {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.hud-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--marigold);
+  background: transparent;
+}
+
+.hud-dot--won {
+  background: var(--marigold);
+}
+
+.hud-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hud-timer {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.hud-timer--urgent {
+  color: var(--danger);
+}
+
+.hud-round {
+  font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.arena-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 9, 18, 0.8);
+}
+
+.arena-overlay[hidden] {
+  display: none;
+}
+
+/* Countdown floats over the arena without dimming it. */
+.arena-overlay--transparent {
+  background: transparent;
+  pointer-events: none;
+}
+
+.arena-overlay__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+  padding: clamp(16px, 4vw, 40px);
+  max-width: min(90%, 720px);
+}
+
+.arena-overlay__title {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 60px);
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.8);
+}
+
+.arena-overlay__body--countdown .arena-overlay__title {
+  color: var(--marigold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.arena-overlay__body--match-result .arena-overlay__title {
+  color: var(--marigold);
+}
+
+.arena-overlay__detail {
+  margin: 0;
+  color: var(--paper);
+  font-size: clamp(0.9rem, 2vw, 1.15rem);
+}
+
+.arena-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  max-width: 62ch;
 }
 
 /* -------------------------------------------------------- settings/panels */

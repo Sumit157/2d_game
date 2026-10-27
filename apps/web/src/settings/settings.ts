@@ -32,6 +32,25 @@ export const DEFAULT_KEY_BINDINGS: Record<InputAction, string> = {
   pause: 'Escape',
 };
 
+/**
+ * Fixed bindings for the second local keyboard (arrows + the punctuation row).
+ *
+ * Player 1's bindings are remappable in Settings; player 2 is fixed for now so
+ * one settings list stays understandable. AIs take over player 2 in Phase 3.
+ */
+export const PLAYER_TWO_KEY_BINDINGS: Record<InputAction, string> = {
+  moveLeft: 'ArrowLeft',
+  moveRight: 'ArrowRight',
+  jump: 'ArrowUp',
+  crouch: 'ArrowDown',
+  block: 'ShiftRight',
+  light: 'Comma',
+  heavy: 'Period',
+  special: 'Slash',
+  ultimate: 'Backslash',
+  pause: 'Escape',
+};
+
 export const DEFAULT_SETTINGS: Settings = {
   masterVolume: 0.8,
   musicVolume: 0.6,

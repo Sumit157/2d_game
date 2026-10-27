@@ -1,3 +1,4 @@
+export * from './combat/index.js';
 export * from './constants.js';
 export * from './contentConfig.js';
 export * from './input.js';

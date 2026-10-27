@@ -9,12 +9,19 @@ import {
   SETTINGS_STORAGE_KEY,
 } from '../settings/settings';
 import { mountApp, type ArenaHost } from './app';
+import type { Scheduler } from './scheduler';
 
 interface Harness {
   arena: ArenaHost & { mount: ReturnType<typeof vi.fn>; unmount: ReturnType<typeof vi.fn> };
   settings: ReturnType<typeof createSettingsStore>;
   destroy(): void;
 }
+
+/** Menu-shell tests never run frames; the arena loop is exercised separately. */
+const stillScheduler: Scheduler = {
+  request: () => 0,
+  cancel: () => undefined,
+};
 
 function mount(): Harness {
   document.body.innerHTML = '<div id="app"></div>';
@@ -27,7 +34,7 @@ function mount(): Harness {
   } as ArenaHost & { mount: ReturnType<typeof vi.fn>; unmount: ReturnType<typeof vi.fn> };
 
   const settings = createSettingsStore();
-  const app = mountApp({ root, arena, settingsStore: settings });
+  const app = mountApp({ root, arena, settingsStore: settings, scheduler: stillScheduler });
 
   return {
     arena,
@@ -118,10 +125,19 @@ describe('menu shell', () => {
 
     buttonByText(screen(), 'Start match').click();
     expect(harness.arena.mount).toHaveBeenCalledTimes(1);
-    const [mountEl, stageId, characterId] = harness.arena.mount.mock.calls[0] ?? [];
+    const [mountEl, options] = harness.arena.mount.mock.calls[0] ?? [];
     expect(mountEl).toBeInstanceOf(HTMLElement);
-    expect(stageId).toBe(STAGES[0]?.id);
-    expect(characterId).toBe(CHARACTERS[0]?.id);
+    expect(mountEl?.id).toBe('arena-world');
+    expect(options?.stageId).toBe(STAGES[0]?.id);
+    expect(options?.fighters).toEqual([CHARACTERS[0]?.id, CHARACTERS[1]?.id]);
+    expect(typeof options?.getState).toBe('function');
+    expect(typeof options?.drainEvents).toBe('function');
+    expect(options?.getState().phase).toBe('countdown');
+    expect(options?.getVisuals()).toEqual({ screenShake: true, reducedMotion: false });
+
+    // Leaving a match goes through the pause overlay, never a stray click.
+    buttonByText(screen(), 'Pause').click();
+    expect(screen().querySelector('.arena-overlay__title')?.textContent).toBe('Paused');
 
     buttonByText(screen(), 'Return to menu').click();
     expect(harness.arena.unmount).toHaveBeenCalledTimes(1);
@@ -138,7 +154,7 @@ describe('menu shell', () => {
     jantar.click();
     buttonByText(screen(), 'Start match').click();
 
-    expect(harness.arena.mount.mock.calls[0]?.[1]).toBe(STAGES[1]?.id);
+    expect(harness.arena.mount.mock.calls[0]?.[1]?.stageId).toBe(STAGES[1]?.id);
   });
 
   it('announces online modes as Phase 4 work instead of dead-ending', () => {
