@@ -1,0 +1,22 @@
+{
+  "name": "@desi-fighter/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@colyseus/ws-transport": "^0.16.5",
+    "@desi-fighter/shared": "*",
+    "colyseus": "^0.16.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "tsx": "^4.20.0"
+  }
+}

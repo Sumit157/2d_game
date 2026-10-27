@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+docs/
+# Build output
+dist/
+build/
+*.tsbuildinfo
+MASTER_PROMPT_OPENCODE.md
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# Local environment (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vite
+.vite/
